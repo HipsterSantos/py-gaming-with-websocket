@@ -6,6 +6,7 @@ window.addEventListener("DOMContentLoaded", () => {
   createBoard(board);
 
   const websocket = new WebSocket("ws://localhost:8001/");
+  receiveMoves(board,websocket)
   sendMoves(board, websocket);
 });
 
@@ -16,22 +17,26 @@ function showMessages(message){
 function receiveMoves(board,websocket){
     websocket.addEventListener('message',({data})=>{
         const event = JSON.parse(data)
-        switch(data.type){
+        console.log('data event --', data)
+        switch(event.type){
             case 'play': {
+                console.log('received play event --', event)
                 playMove(board,event.player,event.column,event.row)
                 break;
             }
             case 'win': {
+                console.log('received win event --', event)
                 showMessages(`Player ${event.player} have won `)
                 websocket.close(1000);
                 break;
             }
             case 'error': {
+                console.log('received error event --', data)
                 showMessages(event.message)    
                 break;
             }
             default: 
-                throw new Error('Unsupported event type ')
+                throw new Error(`Unsupported event type ${data} `)
         }
     })
 }
